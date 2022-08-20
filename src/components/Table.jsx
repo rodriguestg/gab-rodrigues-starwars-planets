@@ -8,8 +8,8 @@ function Table() {
   const colunsTable = ['Name', 'Rotation Period', 'Orbital Period',
     'Diameter', 'Climate', 'Gravity', 'Terrain', 'Surface Water',
     'Population', 'Films', 'Created', 'Edited', 'URL'];
-  const colunsOptions = ['population', 'orbital_period',
-    'diameter', 'rotation_period', 'surface_water'];
+  // const columnsOptions = ['population', 'orbital_period',
+  //   'diameter', 'rotation_period', 'surface_water'];
 
   // useStates():
   const [resultsPlanets, setResultsPlanets] = useState([]);
@@ -17,13 +17,12 @@ function Table() {
     filterByName: { name: '' } });
   const [numberSearch, setNumberSearch] = useState({ filterByNumericValues: [{
     column: 'population', comparison: 'maior que', value: 0 }] });
+  const [columnsOptions, setColumnsOptions] = useState(['population', 'orbital_period',
+    'diameter', 'rotation_period', 'surface_water']);
+  const [filtersList, setFiltersList] = useState([]);
 
   // Subindo resultados da API no hook useState
-  useEffect(() => {
-    if (results) {
-      setResultsPlanets(results);
-    }
-  }, [results]);
+  useEffect(() => { if (results) { setResultsPlanets(results); } }, [results]);
 
   // Filtrando por nome
   useEffect(() => {
@@ -34,13 +33,37 @@ function Table() {
     }
   }, [planetNameSearch]);
 
-  // Filtrando por comparação
+  useEffect(() => {
+    // if (results) {
+    //   const filters = results.filter((result) => result.name.toLowerCase()
+    //     .includes(planetNameSearch.filterByName.name.toLowerCase()));
+    //   setResultsPlanets(filters);
+    // }
+  }, [filtersList]);
+
+  // Eliminando filtro
+  const romoveFilterOption = (column) => {
+    const removeColumn = columnsOptions
+      .filter((columnOption) => columnOption !== column);
+    setColumnsOptions(removeColumn);
+  };
+
+  // Reseta o state de colunas
+  useEffect(() => {
+    if (results) {
+      setNumberSearch({ filterByNumericValues: [{
+        column: columnsOptions[0], comparison: 'maior que', value: 0 }] });
+    }
+  }, [columnsOptions]);
+
   // func handleClick
+  // Filtrando por comparação e chamando funções.
   const handleClick = () => {
     const { value, column, comparison } = numberSearch.filterByNumericValues[0];
     const valueNumber = parseFloat(value);
+    setFiltersList([...filtersList, { column, comparison, valueNumber }]);
     if (results) {
-      const searchFilterNumber = results.filter((result) => {
+      const searchFilterNumber = resultsPlanets.filter((result) => {
         if (comparison === 'maior que') {
           return parseFloat(result[`${column}`]) > valueNumber;
         }
@@ -49,6 +72,8 @@ function Table() {
         }
         return parseFloat(result[`${column}`]) === valueNumber;
       });
+      console.log(searchFilterNumber);
+      romoveFilterOption(column);
       return setResultsPlanets(searchFilterNumber);
     }
   };
@@ -86,7 +111,7 @@ function Table() {
               >
                 Coluna
                 {
-                  colunsOptions.map((key) => <option key={ key }>{ key }</option>)
+                  columnsOptions.map((key) => <option key={ key }>{ key }</option>)
                 }
               </select>
               <select
@@ -110,6 +135,14 @@ function Table() {
                 Filtrar
               </button>
             </form>
+            {
+              !filtersList.length === 0 ? <p>Sem filtros</p>
+                : filtersList.map((filter) => (
+                  <p key={ filter.column }>
+                    { `${filter.column} ${filter.comparison} ${filter.valueNumber}` }
+                  </p>
+                ))
+            }
             <table>
               <thead>
                 <tr>
