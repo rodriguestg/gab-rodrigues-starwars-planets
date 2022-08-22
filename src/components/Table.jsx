@@ -33,18 +33,41 @@ function Table() {
     }
   }, [planetNameSearch]);
 
+  const { value: numberFil, column, comparison } = numberSearch.filterByNumericValues[0];
+  const valueNumber = parseFloat(numberFil);
+  let resultsComparisons = results;
+
+  const resultsFilter = () => {
+    filtersList.forEach((fil) => {
+      if (fil.comparison === 'maior que') {
+        const mapResults = resultsComparisons.filter((resultComparison) => (
+          parseFloat(resultComparison[`${fil.column}`]) > fil.valueNumber));
+        resultsComparisons = mapResults;
+      }
+      if (fil.comparison === 'menor que') {
+        const mapResults = resultsComparisons.filter((resultComparison) => (
+          parseFloat(resultComparison[`${fil.column}`]) < fil.valueNumber));
+        resultsComparisons = mapResults;
+      }
+      if (fil.comparison === 'igual a') {
+        const mapResults = resultsComparisons.filter((resultComparison) => (
+          parseFloat(resultComparison[`${fil.column}`]) === fil.valueNumber));
+        resultsComparisons = mapResults;
+      }
+    });
+    setResultsPlanets(resultsComparisons);
+  };
+
   useEffect(() => {
-    // if (results) {
-    //   const filters = results.filter((result) => result.name.toLowerCase()
-    //     .includes(planetNameSearch.filterByName.name.toLowerCase()));
-    //   setResultsPlanets(filters);
-    // }
+    if (results) {
+      resultsFilter();
+    }
   }, [filtersList]);
 
-  // Eliminando filtro
-  const romoveFilterOption = (column) => {
+  // Eliminando opção de filtro
+  const romoveFilterOption = (columnRemove) => {
     const removeColumn = columnsOptions
-      .filter((columnOption) => columnOption !== column);
+      .filter((columnOption) => columnOption !== columnRemove);
     setColumnsOptions(removeColumn);
   };
 
@@ -56,29 +79,25 @@ function Table() {
     }
   }, [columnsOptions]);
 
-  // func handleClick
-  // Filtrando por comparação e chamando funções.
+  // ------- HANDLECLICKS
+  // Remove opção de filtro utilizada e adiciona filtro no state.
   const handleClick = () => {
-    const { value, column, comparison } = numberSearch.filterByNumericValues[0];
-    const valueNumber = parseFloat(value);
     setFiltersList([...filtersList, { column, comparison, valueNumber }]);
-    if (results) {
-      const searchFilterNumber = resultsPlanets.filter((result) => {
-        if (comparison === 'maior que') {
-          return parseFloat(result[`${column}`]) > valueNumber;
-        }
-        if (comparison === 'menor que') {
-          return parseFloat(result[`${column}`]) < valueNumber;
-        }
-        return parseFloat(result[`${column}`]) === valueNumber;
-      });
-      console.log(searchFilterNumber);
-      romoveFilterOption(column);
-      return setResultsPlanets(searchFilterNumber);
-    }
+    romoveFilterOption(column);
   };
 
-  // func handleChange
+  // Remove todos os filtros.
+  const handleClickRemoveFilters = () => {
+    setFiltersList([]);
+  };
+
+  // Remove filtro.
+  const handleClickRemoveFilterId = ({ target }) => {
+    const removendoUmFiltro = filtersList.filter((filter) => filter.column !== target.id);
+    setFiltersList(removendoUmFiltro);
+  };
+
+  // HANDLECHANGE
   const handleChange = ({ target }) => {
     const { name, value } = target;
     if (name === 'nameFilter') {
@@ -91,7 +110,6 @@ function Table() {
     }
   };
 
-  const { value } = numberSearch.filterByNumericValues[0];
   return (
     <div>
       { !results ? <p>Carregando...</p>
@@ -108,6 +126,7 @@ function Table() {
                 onChange={ handleChange }
                 data-testid="column-filter"
                 name="column"
+                value={ column }
               >
                 Coluna
                 {
@@ -118,6 +137,7 @@ function Table() {
                 name="comparison"
                 onChange={ handleChange }
                 data-testid="comparison-filter"
+                value={ comparison }
               >
                 Operador
                 <option>maior que</option>
@@ -129,7 +149,7 @@ function Table() {
                 type="number"
                 data-testid="value-filter"
                 name="value"
-                value={ value }
+                value={ numberFil }
               />
               <button type="button" data-testid="button-filter" onClick={ handleClick }>
                 Filtrar
@@ -138,11 +158,27 @@ function Table() {
             {
               !filtersList.length === 0 ? <p>Sem filtros</p>
                 : filtersList.map((filter) => (
-                  <p key={ filter.column }>
-                    { `${filter.column} ${filter.comparison} ${filter.valueNumber}` }
-                  </p>
+                  <div key={ filter.column } data-testid="filter">
+                    <p>
+                      { `${filter.column} ${filter.comparison} ${filter.valueNumber}` }
+                    </p>
+                    <button
+                      id={ filter.column }
+                      type="button"
+                      onClick={ handleClickRemoveFilterId }
+                    >
+                      X
+                    </button>
+                  </div>
                 ))
             }
+            <button
+              type="button"
+              data-testid="button-remove-filters"
+              onClick={ handleClickRemoveFilters }
+            >
+              Remover todas filtragens
+            </button>
             <table>
               <thead>
                 <tr>
