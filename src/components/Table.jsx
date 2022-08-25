@@ -38,20 +38,20 @@ function Table() {
   let resultsComparisons = results;
 
   const resultsFilter = () => {
-    filtersList.forEach((fil) => {
-      if (fil.comparison === 'maior que') {
+    filtersList.forEach((filter) => {
+      if (filter.comparison === 'maior que') {
         const mapResults = resultsComparisons.filter((resultComparison) => (
-          parseFloat(resultComparison[`${fil.column}`]) > fil.valueNumber));
+          parseFloat(resultComparison[`${filter.column}`]) > filter.valueNumber));
         resultsComparisons = mapResults;
       }
-      if (fil.comparison === 'menor que') {
+      if (filter.comparison === 'menor que') {
         const mapResults = resultsComparisons.filter((resultComparison) => (
-          parseFloat(resultComparison[`${fil.column}`]) < fil.valueNumber));
+          parseFloat(resultComparison[`${filter.column}`]) < filter.valueNumber));
         resultsComparisons = mapResults;
       }
-      if (fil.comparison === 'igual a') {
+      if (filter.comparison === 'igual a') {
         const mapResults = resultsComparisons.filter((resultComparison) => (
-          parseFloat(resultComparison[`${fil.column}`]) === fil.valueNumber));
+          parseFloat(resultComparison[`${filter.column}`]) === filter.valueNumber));
         resultsComparisons = mapResults;
       }
     });
